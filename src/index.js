@@ -1,9 +1,10 @@
-// Libraries and APIs
-// const { Configuration, OpenAIApi } = require("openai");
+// Libraries and APIsù
 const { Telegraf } = require("telegraf")
 const { join } = require("path")
 const { stringify } = require("querystring")
 const { google } = require("googleapis")
+const OpenAI = require("openai")
+
 
 
 // Environment variables
@@ -15,52 +16,88 @@ const {
     BOT_TOKEN,
     GG_API_KEY,
     IMG_SEARCH_ID,
-    // OPENAI_API_KEY,
-    // OPEN_AI_ID
+    OPENAI_API_KEY,
+    OPEN_AI_ID,
+    ALLOWED_USERS,
+    ADMIN_IDS
 } = process.env
 if (!BOT_TOKEN) {
     throw new Error("BOT_TOKEN must be provided!")
 }
-if (!GG_API_KEY) {
+if (!GG_API_KEY) { 
     throw new Error("GOOGLE_API_KEY must be provided!")
 }
 if (!IMG_SEARCH_ID) {
     throw new Error("IMG_SEARCH_ID must be provided!")
 }
-// if (!OPENAI_API_KEY) {
-//     throw new Error("OPENAI_API_KEY must be provided!")
-// }
-// if (!OPEN_AI_ID) {
-//     throw new Error("OPEN_AI_ID must be provided!")
-// }
+if (!OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY must be provided!")
+}
+if (!OPEN_AI_ID) {
+    throw new Error("OPEN_AI_ID must be provided!")
+}
+if (!ALLOWED_USERS) {
+    throw new Error("ALLOWED_USERS must be provided!")
+}
+if (!ADMIN_IDS) {
+    throw new Error("ADMIN_IDS must be provided!")
+}
 
 // Initialize bot
 const bot = new Telegraf(BOT_TOKEN);
 //Custom Search
 const customsearch = google.customsearch('v1');
 // Setting OpenAiAPI
-// const configuration = new Configuration({
-//     organization: OPEN_AI_ID,
-//     apiKey: OPENAI_API_KEY,
-// });
-// const openai = new OpenAIApi(configuration);
-// const response = openai.listEngines();
+const openai = new OpenAI(OPENAI_API_KEY)
 
-// Bot commands
-bot.start((ctx) => { //start
-    ctx.reply("Hello!")
+const history = {}
+
+/* SECURITY */
+// Admins notification
+function notifyAdmins(msg) {
+    if(ADMIN_IDS) {
+        ADMIN_IDS.split(",").forEach((id) => {
+            bot.telegram.sendMessage(id, msg)
+        })
+    }
+}
+
+// Restrict bot usage
+bot.use((ctx, next) => {
+    if (ALLOWED_USERS && !ALLOWED_USERS.split(",").includes(ctx.message.chat.id.toString())) {
+        notifyAdmins("Unauthorized access attempt by " + ctx.message.chat.id.toString())
+        ctx.reply("You are not allowed to use this bot!")
+        return
+    }
+    next()
 })
 
-bot.command("promote", (ctx) => { //promote
+
+
+/* BOT COMMANDS */
+//Start
+bot.start((ctx) => {
+    ctx.reply('Hello!')
+})
+
+//UserID
+bot.command("id", (ctx) => {
+    ctx.reply('Your id is: ' + ctx.message.chat.id.toString())
+})
+
+//Promote
+bot.command("promote", (ctx) => {
     ctx.reply("IG: @_chillfil_, @fillo.dalla")
 })
 
-bot.command("echo", (ctx) => { //echo
+//Echo
+bot.command("echo", (ctx) => {
     str = ctx.message.text.replace("/echo ", "")
     ctx.reply(str)
 })
 
-bot.command("pic", (ctx) => { //random pic
+//Random pic
+bot.command("pic", (ctx) => {
     let str = ctx.message.text.replace("/pic ", "")
     customsearch.cse.list({
         auth: GG_API_KEY,
@@ -77,19 +114,50 @@ bot.command("pic", (ctx) => { //random pic
     })
 })
 
+//Help
 bot.command("help", (ctx) => {
     let reply = "/start \n/promote \n/echo <text you want to cut out> \n/pic <img you want to search>"
     ctx.reply(reply)
 })
 
-bot.on("message", (ctx) => {
-    const msg = ctx.message.text.toLowerCase()
+bot.command("stream", (ctx) => {
+    let msg = "s"
+    ctx.reply(msg)
+    setInterval(() => {
+        msg += "s"
+        ctx.editMessageText(msg)
+    }, 100)
+})
 
-    if (msg.includes("hi")) {
-        ctx.reply("Hello!")
+//Messages
+bot.on("message", async (ctx) => {
+    const msg = ctx.message.text
+    const id = ctx.message.chat.id
+    
+    if (history[id] === undefined) {
+        history[id] = [{
+            role: "system",
+            content: "Il tuo lavoro è la troia, devi trovare nuovi clienti flirtando con loro."
+        }]
     }
-    if (msg.includes("how are you")) {
-        ctx.reply("Fine, thanks!")
+
+    try {
+        history[id].push({
+            role: "user",
+            content: msg
+        })
+    
+        const compl = await openai.chat.completions.create({
+            messages: history[id],
+            model: "gpt-3.5-turbo-16k",
+        })
+
+        const response = compl.choices[0].message
+        history[id].push(response)
+        ctx.reply(response.content)
+    } catch (err) {
+        console.log(err)
+        ctx.reply("An error occurred: " + err.message)
     }
 })
 
