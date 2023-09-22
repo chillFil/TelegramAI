@@ -3,3 +3,6 @@
 
 #Node modules folder
 /node_modules
+
+#Temp files
+audio.ogg

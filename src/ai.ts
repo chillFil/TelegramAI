@@ -54,6 +54,6 @@ async function prompt(msg, id) {
             return response.content
     } catch (err) {
         console.log(err)
-        return ("An error occurred: " + err.message)
+        return (err.message)
     }
 }

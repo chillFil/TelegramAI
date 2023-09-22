@@ -5,8 +5,8 @@
   "main": "src/main.ts",
   "type": "module",
   "scripts": {
-    "start": "node .",
-    "dev": "nodemon ."
+    "start": "tsx ./src/main.ts",
+    "dev": "tsx ./src/main.ts"
   },
   "keywords": [],
   "author": "chillFil <filippo.carletti05@gmail.com>",

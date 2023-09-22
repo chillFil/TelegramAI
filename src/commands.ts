@@ -35,18 +35,20 @@ export function help (ctx) {
 }
 
 //Pic
-export function pic (ctx) {
-    google.customsearch("v1").cse.list({
-        auth: GG_API_KEY,
-        cx: IMG_SEARCH_ID,
-        q: ctx.message.text.replace("/pic ", ""),
-        searchType: 'image',
-        num: 10,
-        safe: 'off'
-    }).then((result) => {
+export async function pic (ctx) {
+    try {
+        let result = await google.customsearch("v1").cse.list({
+            auth: GG_API_KEY,
+            cx: IMG_SEARCH_ID,
+            q: ctx.message.text.replace("/pic ", ""),
+            searchType: 'image',
+            num: 10,
+            safe: 'off'
+        })
         if(result.data.items)
             ctx.replyWithPhoto(result.data.items[Math.floor(Math.random() * 10)].link)
-    }).catch((err) => {
-        ctx.reply(err)
-    })
+    }
+    catch(err) {
+        ctx.reply(err.message)
+    }
 }
