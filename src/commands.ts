@@ -1,4 +1,12 @@
 import { google } from "googleapis"
+import { config } from "dotenv"
+config({ 
+    path: "./.env" 
+})
+const {
+    GG_API_KEY,
+    IMG_SEARCH_ID
+} = process.env
 
 //Start
 export function start (ctx) {
@@ -29,8 +37,8 @@ export function help (ctx) {
 //Pic
 export function pic (ctx) {
     google.customsearch("v1").cse.list({
-        auth: process.env.GG_API_KEY,
-        cx: process.env.IMG_SEARCH_ID,
+        auth: GG_API_KEY,
+        cx: IMG_SEARCH_ID,
         q: ctx.message.text.replace("/pic ", ""),
         searchType: 'image',
         num: 10,
