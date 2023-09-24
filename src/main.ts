@@ -45,20 +45,12 @@ bot.command("id", commands.id)
 bot.command("promote", commands.promote)
 bot.command("echo", commands.echo)
 bot.command("pic", commands.pic)
+bot.command("picgen", ai.picgen)
 bot.command("help", commands.help)
 //bot.command("price", price.options)
 
-bot.command("stream", (ctx) => {
-    let msg = "s"
-    ctx.reply(msg)
-    setInterval(() => {
-        msg += "s"
-        ctx.editMessageText(msg)
-    }, 100)
-})
-
 //Messages
-bot.on("text", ai.text)
+bot.on("text", ai.prompt)
 bot.on("voice", (ctx) => ai.voice(bot, ctx))
 
 
