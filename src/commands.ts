@@ -30,7 +30,7 @@ export function echo (ctx) {
 
 //Help
 export function help (ctx) {
-    let reply = "/start \n/promote \n/echo <text you want to cut out> \n/pic <img you want to search>"
+    let reply = "/start \n/promote \n/echo <text you want to cut out> \n/pic <img you want to search> \n/picgen <img you want to generate> \nYou can also just send a message and get the AI response. \nOr you can just try to send a voice message and see what happens! \n\nHave fun!!"
     ctx.reply(reply)
 }
 

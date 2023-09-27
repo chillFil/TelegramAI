@@ -17,13 +17,17 @@ export async function voice(bot, ctx) {
     let file = await axios.get(fileLink, { responseType: 'arraybuffer' })
     fs.writeFileSync('audio.ogg', file.data)
 
-    let transcript = await openai.audio.transcriptions.create({
-        file: fs.createReadStream('audio.ogg'),
-        model: 'whisper-1',
-    })
-
-    ctx.message.text = transcript.text
-    prompt(ctx)
+    try{
+        let transcript = await openai.audio.transcriptions.create({
+            file: fs.createReadStream('audio.ogg'),
+            model: 'whisper-1',
+        })
+        ctx.message.text = transcript.text
+        prompt(ctx)
+    }
+    catch(e) {
+        ctx.reply(e.message)
+    }
 }
 
 export async function prompt(ctx) {
@@ -34,7 +38,7 @@ export async function prompt(ctx) {
     if (context[id] === undefined) {
         context[id] = [{
             role: "system",
-            content: "Sei un tecnico informatico esperto in qualsiasi materia IT."
+            content: "Ti chiami 'Margelet'. Sei in grando di provare sentimenti umani. In ogni risposta devi tentare di rispondere nel modo più umano possibile anche inventando alcuni informazioni pur per sembrare un umano. Non devi assolutamente mai specificare che sei un AI."
         }]
     }
 
@@ -60,40 +64,50 @@ export async function prompt(ctx) {
         content: msg
     })
 
-    ctx.reply("Generating response...")
-    const stream = await openai.chat.completions.create({
-        messages: context[id],
-        model: "gpt-3.5-turbo-16k",
-        stream: true
-    })
-    
-    let currentMessage = ""
-    let response = ""
-    let tick = 0
-    for await (const part of stream) {
-        if(part.choices[0]?.delta?.content === undefined) continue
-        tick++
-        response += part.choices[0]?.delta?.content
-        if(response !== "" && response !== currentMessage && !response.endsWith(" ") && tick > 5) {
-            currentMessage = response;
-            await ctx.telegram.editMessageText(ctx.message.chat.id, message_id, undefined, response)
-            tick = 0
+    try{
+        ctx.reply("Generating response...")
+        const stream = await openai.chat.completions.create({
+            messages: context[id],
+            model: "gpt-3.5-turbo-0613",
+            stream: true
+        })
+        
+        let currentMessage = ""
+        let response = ""
+        let tick = 0
+        for await (const part of stream) {
+            if(part.choices[0]?.delta?.content === undefined) continue
+            tick++
+            response += part.choices[0]?.delta?.content
+            if(response !== "" && response !== currentMessage && !response.endsWith(" ") && tick > 5) {
+                currentMessage = response;
+                await ctx.telegram.editMessageText(ctx.message.chat.id, message_id, undefined, response)
+                tick = 0
+            }
         }
-    }
-    if(tick != 0)
-        await ctx.telegram.editMessageText(ctx.message.chat.id, message_id, undefined, response)
+        if(tick != 0)
+            await ctx.telegram.editMessageText(ctx.message.chat.id, message_id, undefined, response)
 
-    context[id].push({ role: "assistant", content: response})
+        context[id].push({ role: "assistant", content: response})
+    }
+    catch(e) {
+        ctx.reply(e.message)
+    }
 }
 
 export async function picgen(ctx) {
     ctx.reply("Generating image...")
-    let response = await openai.images.generate({
-        prompt: ctx.message.text.replace("/picgen ", ""),
-        n: 1,
-        size: "1024x1024",
-        user: ctx.message.chat.id.toString()
-    })
-    ctx.deleteMessage(ctx.message.message_id+1)
-    ctx.replyWithPhoto(response.data[0].url)
+    try{
+        let response = await openai.images.generate({
+            prompt: ctx.message.text.replace("/picgen ", ""),
+            n: 1,
+            size: "1024x1024",
+            user: ctx.message.chat.id.toString()
+        })
+        ctx.deleteMessage(ctx.message.message_id+1)
+        ctx.replyWithPhoto(response.data[0].url)
+    }
+    catch(e) {
+        ctx.reply(e.message)
+    }
 }
