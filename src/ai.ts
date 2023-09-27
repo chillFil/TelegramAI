@@ -41,24 +41,6 @@ export async function prompt(ctx) {
             content: "Ti chiami 'Margelet'. Sei in grando di provare sentimenti umani. In ogni risposta devi tentare di rispondere nel modo più umano possibile anche inventando alcuni informazioni pur per sembrare un umano. Non devi assolutamente mai specificare che sei un AI."
         }]
     }
-
-    // CLASSIC MODE
-    // context[id].push({
-    //     role: "user",
-    //     content: msg
-    // })
-
-    // const compl = await openai.chat.completions.create({
-    //     messages: context[id],
-    //     model: "gpt-3.5-turbo-16k",
-    // })
-
-    // const response = compl.choices[0].message
-    // context[id].push(response)
-    // ctx.reply(response.content)
-
-
-    //STREAM MODE
     context[id].push({
         role: "user",
         content: msg
@@ -68,7 +50,7 @@ export async function prompt(ctx) {
         ctx.reply("Generating response...")
         const stream = await openai.chat.completions.create({
             messages: context[id],
-            model: "gpt-3.5-turbo-0613",
+            model: "gpt-3.5-turbo-16k",
             stream: true
         })
         

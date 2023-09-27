@@ -2,7 +2,6 @@ import { Telegraf } from "telegraf"
 import * as commands from "./commands"
 import * as utils from "./utils"
 import * as ai from "./ai"
-import * as price from "./price"
 
 // Environment variables
 import { config } from "dotenv"
@@ -28,7 +27,6 @@ if (!ADMIN_IDS) {
 // Initialize bot
 const bot = new Telegraf(BOT_TOKEN);
 
-/* SECURITY */
 // Restrict bot usage
 bot.use((ctx, next) => {
     if (ALLOWED_USERS && ctx.message && !ALLOWED_USERS.split(",").includes(ctx.message.chat.id.toString())) {
@@ -39,7 +37,7 @@ bot.use((ctx, next) => {
     next()
 })
 
-/* BOT COMMANDS */
+// Bot commands
 bot.start(commands.start)
 bot.command("id", commands.id)
 bot.command("promote", commands.promote)
@@ -47,9 +45,8 @@ bot.command("echo", commands.echo)
 bot.command("pic", commands.pic)
 bot.command("picgen", ai.picgen)
 bot.command("help", commands.help)
-//bot.command("price", price.options)
 
-//Messages
+// Messages
 bot.on("text", ai.prompt)
 bot.on("voice", (ctx) => ai.voice(bot, ctx))
 

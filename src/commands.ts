@@ -20,7 +20,7 @@ export function id (ctx) {
 
 //Promote
 export function promote (ctx) {
-    ctx.reply("IG: @_chillfil_, @fillo.dalla")
+    ctx.reply("Developer:\n@_chillfil_\n@fillo.dalla\n@niko.zanni\n@_bore_04")
 }
 
 //Echo
