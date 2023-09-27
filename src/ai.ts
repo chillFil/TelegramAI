@@ -1,7 +1,6 @@
 import { OpenAI } from 'openai'
 import axios from 'axios'
 import fs from 'fs'
-
 import { config } from "dotenv"
 config({ 
     path: "./.env" 
@@ -63,12 +62,12 @@ export async function prompt(ctx) {
             response += part.choices[0]?.delta?.content
             if(response !== "" && response !== currentMessage && !response.endsWith(" ") && tick > 5) {
                 currentMessage = response;
-                await ctx.telegram.editMessageText(ctx.message.chat.id, message_id, undefined, response)
+                await ctx.telegram.editMessageText(id, message_id, undefined, response)
                 tick = 0
             }
         }
         if(tick != 0)
-            await ctx.telegram.editMessageText(ctx.message.chat.id, message_id, undefined, response)
+            await ctx.telegram.editMessageText(id, message_id, undefined, response)
 
         context[id].push({ role: "assistant", content: response})
     }
@@ -92,4 +91,9 @@ export async function picgen(ctx) {
     catch(e) {
         ctx.reply(e.message)
     }
+}
+
+export function reset(ctx) {
+    context[ctx.message.chat.id] = undefined
+    ctx.reply("Context resetted. You now have a brand new bot!")
 }

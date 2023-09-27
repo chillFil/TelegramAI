@@ -44,6 +44,7 @@ bot.command("promote", commands.promote)
 bot.command("echo", commands.echo)
 bot.command("pic", commands.pic)
 bot.command("picgen", ai.picgen)
+bot.command("reset", ai.reset)
 bot.command("help", commands.help)
 
 // Messages
